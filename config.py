@@ -5,7 +5,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 BASE = Path(__file__).resolve().parent
-load_dotenv(BASE / ".env")
+load_dotenv(BASE / ".env", override=True)
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 # Model names change often on the free tier. If you get a "model not found" error,
