@@ -1,4 +1,4 @@
-"""All LLM calls live here, so swapping Gemini for another provider is a one-file change."""
+"""All LLM calls live here"""
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -31,7 +31,11 @@ def run(prompt: str) -> str:
     if not config.GEMINI_API_KEY:
         return "Missing GEMINI_API_KEY in .env"
     try:
-        client = genai.Client(api_key=config.GEMINI_API_KEY)
+        client = genai.Client(
+        api_key=config.GEMINI_API_KEY,
+        http_options=types.HttpOptions(timeout=30_000),  # milliseconds
+        )
+        
         resp = client.models.generate_content(
             model=config.GEMINI_MODEL,
             contents=prompt,
