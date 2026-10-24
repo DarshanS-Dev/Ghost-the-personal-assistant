@@ -4,7 +4,7 @@
   "description": "Minimal AI personal assistant command palette.",
   "main": "ui/main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron . --no-sandbox"
   },
   "repository": {
     "type": "git",

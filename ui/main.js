@@ -3,6 +3,9 @@ const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
 
+// Required for Ubuntu 24.04 unprivileged user namespaces
+app.commandLine.appendSwitch('no-sandbox');
+
 let mainWindow = null;
 const stateFile = path.join(app.getPath('userData'), 'window-state.json');
 

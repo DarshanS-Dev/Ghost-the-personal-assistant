@@ -18,5 +18,6 @@ fi
 if [ $# -gt 0 ]; then
   exec .venv/bin/python backend/main.py "$@"
 else
-  exec "$DIR/node_modules/.bin/electron" "$DIR"
+  # --no-sandbox is required on Ubuntu 24.04 due to kernel unprivileged userns restrictions
+  exec "$DIR/node_modules/.bin/electron" "$DIR" --no-sandbox "$@"
 fi
