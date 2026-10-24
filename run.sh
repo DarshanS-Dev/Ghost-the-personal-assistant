@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # Ghost launcher: runs Electron GUI or CLI prompt
-cd "$(dirname "$(readlink -f "$0")")" || exit 1
+DIR="$(dirname "$(readlink -f "$0")")"
+cd "$DIR" || exit 1
+
+export PATH="$DIR/node_modules/.bin:/usr/local/bin:/usr/bin:/bin:$PATH"
 
 if [ $# -gt 0 ]; then
   exec .venv/bin/python backend/main.py "$@"
 else
-  exec npm start --silent
+  exec "$DIR/node_modules/.bin/electron" "$DIR"
 fi
