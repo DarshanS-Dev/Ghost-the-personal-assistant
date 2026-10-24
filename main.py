@@ -1,18 +1,13 @@
-"""Entry point.
-  python main.py                      -> opens the popup (this is what the hotkey runs)
-  python main.py remind me to X at 5pm -> no GUI, prints the reply 
-"""
+"""Root CLI redirect to backend/main.py"""
+import subprocess
 import sys
+from pathlib import Path
 
-
-def main() -> None:
-    if len(sys.argv) > 1:
-        import llm
-        print(llm.run(" ".join(sys.argv[1:])))
-    else:
-        import popup
-        popup.launch()
-
+BASE = Path(__file__).resolve().parent
 
 if __name__ == "__main__":
-    main()
+    py_exec = BASE / ".venv" / "bin" / "python"
+    backend_script = BASE / "backend" / "main.py"
+    cmd = [str(py_exec) if py_exec.exists() else sys.executable, str(backend_script)] + sys.argv[1:]
+    res = subprocess.run(cmd)
+    sys.exit(res.returncode)
