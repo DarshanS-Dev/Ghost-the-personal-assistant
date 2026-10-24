@@ -26,6 +26,11 @@ if (window.ghostAPI?.onResetFocus) {
   });
 }
 
+// Save position whenever the user finishes dragging and releases the mouse
+window.addEventListener('mouseup', () => {
+  window.ghostAPI?.savePosition?.();
+});
+
 input.addEventListener('input', () => {
   const query = input.value.trim();
   if (query.length > 0) {

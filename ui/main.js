@@ -18,20 +18,15 @@ function loadWindowState() {
   return null;
 }
 
-let saveTimer = null;
 function saveWindowState() {
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    if (!mainWindow || mainWindow.isDestroyed()) return;
-    try {
-      const [x, y] = mainWindow.getPosition();
-      // Only save valid coordinates; never overwrite with top-left (0,0) reset
-      if (x > 20 || y > 20) {
-        fs.mkdirSync(path.dirname(stateFile), { recursive: true });
-        fs.writeFileSync(stateFile, JSON.stringify({ x, y }));
-      }
-    } catch (e) {}
-  }, 250);
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  try {
+    const [x, y] = mainWindow.getPosition();
+    if (x > 10 || y > 10) {
+      fs.mkdirSync(path.dirname(stateFile), { recursive: true });
+      fs.writeFileSync(stateFile, JSON.stringify({ x, y }));
+    }
+  } catch (e) {}
 }
 
 function createWindow() {
@@ -44,11 +39,11 @@ function createWindow() {
   const defaultY = Math.round(screenHeight / 4);
 
   const saved = loadWindowState();
-  let x = (saved && typeof saved.x === 'number' && saved.x > 20) ? saved.x : defaultX;
-  let y = (saved && typeof saved.y === 'number' && saved.y > 20) ? saved.y : defaultY;
+  let x = (saved && typeof saved.x === 'number') ? saved.x : defaultX;
+  let y = (saved && typeof saved.y === 'number') ? saved.y : defaultY;
 
-  if (x < 0 || x > screenWidth - 100) x = defaultX;
-  if (y < 0 || y > screenHeight - 60) y = defaultY;
+  if (x < 10 || x > screenWidth - 100) x = defaultX;
+  if (y < 10 || y > screenHeight - 60) y = defaultY;
 
   mainWindow = new BrowserWindow({
     width: width,
@@ -73,12 +68,21 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
   mainWindow.once('ready-to-show', () => {
+    // Explicitly apply coordinates so Linux WM does not force top-left
+    mainWindow.setPosition(x, y);
     mainWindow.show();
     mainWindow.focus();
+
+    setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.setPosition(x, y);
+      }
+    }, 60);
   });
 
-  // Save coordinates when dragged/moved
-  mainWindow.on('moved', saveWindowState);
+  mainWindow.on('moved', () => {
+    saveWindowState();
+  });
 }
 
 // Single instance handling
@@ -100,6 +104,10 @@ if (!gotTheLock) {
       const [w] = mainWindow.getSize();
       mainWindow.setSize(w, newHeight);
     }
+  });
+
+  ipcMain.handle('ghost:save-position', () => {
+    saveWindowState();
   });
 
   ipcMain.handle('ghost:run-prompt', async (event, prompt) => {
@@ -133,6 +141,7 @@ if (!gotTheLock) {
   });
 
   ipcMain.handle('ghost:close-window', () => {
+    saveWindowState();
     app.quit();
   });
 
