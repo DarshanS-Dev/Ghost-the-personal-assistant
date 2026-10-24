@@ -9,7 +9,7 @@ let isBusy = false;
 
 function resetState() {
   resultStrip.className = 'result-strip hidden';
-  window.ghostAPI.setWindowHeight(64);
+  window.ghostAPI?.setWindowHeight?.(64);
   input.value = '';
   input.disabled = false;
   barContainer.classList.remove('working');
@@ -20,7 +20,7 @@ function resetState() {
 }
 
 // When shown via hotkey or second-instance trigger
-if (window.ghostAPI.onResetFocus) {
+if (window.ghostAPI?.onResetFocus) {
   window.ghostAPI.onResetFocus(() => {
     resetState();
   });
@@ -51,18 +51,18 @@ async function submitTask() {
     // Show result strip
     resultText.textContent = (isError ? '✗ ' : '✓ ') + result;
     resultStrip.className = isError ? 'result-strip error' : 'result-strip';
-    window.ghostAPI.setWindowHeight(108);
+    window.ghostAPI?.setWindowHeight?.(112);
 
     badgeText.textContent = isError ? '✗' : '✓';
 
     setTimeout(() => {
-      window.ghostAPI.closeWindow();
+      window.ghostAPI?.closeWindow?.();
       resetState();
     }, 2400);
   } catch (err) {
     resultText.textContent = `✗ Error: ${err.message}`;
     resultStrip.className = 'result-strip error';
-    window.ghostAPI.setWindowHeight(108);
+    window.ghostAPI?.setWindowHeight?.(112);
     badgeText.textContent = '✗';
     isBusy = false;
     input.disabled = false;
@@ -71,7 +71,7 @@ async function submitTask() {
 
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    window.ghostAPI.closeWindow();
+    window.ghostAPI?.closeWindow?.();
     resetState();
     return;
   }

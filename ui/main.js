@@ -34,7 +34,7 @@ if (!gotTheLock) {
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
     const width = 580;
-    const height = 64;
+    const height = 112;
 
     const saved = loadWindowState();
     let x = saved && typeof saved.x === 'number' ? saved.x : Math.round((screenWidth - width) / 2);
