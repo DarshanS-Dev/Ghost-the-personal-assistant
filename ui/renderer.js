@@ -7,6 +7,25 @@ const resultText = document.getElementById('result-text');
 
 let isBusy = false;
 
+function resetState() {
+  resultStrip.className = 'result-strip hidden';
+  window.ghostAPI.setWindowHeight(64);
+  input.value = '';
+  input.disabled = false;
+  barContainer.classList.remove('working');
+  badge.classList.remove('active');
+  badgeText.textContent = '⏎';
+  isBusy = false;
+  setTimeout(() => input.focus(), 50);
+}
+
+// When shown via hotkey or second-instance trigger
+if (window.ghostAPI.onResetFocus) {
+  window.ghostAPI.onResetFocus(() => {
+    resetState();
+  });
+}
+
 input.addEventListener('input', () => {
   const query = input.value.trim();
   if (query.length > 0) {
@@ -38,15 +57,7 @@ async function submitTask() {
 
     setTimeout(() => {
       window.ghostAPI.closeWindow();
-      // Reset for next launch
-      resultStrip.className = 'result-strip hidden';
-      window.ghostAPI.setWindowHeight(64);
-      input.value = '';
-      input.disabled = false;
-      barContainer.classList.remove('working');
-      badge.classList.remove('active');
-      badgeText.textContent = '⏎';
-      isBusy = false;
+      resetState();
     }, 2400);
   } catch (err) {
     resultText.textContent = `✗ Error: ${err.message}`;
@@ -61,6 +72,7 @@ async function submitTask() {
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     window.ghostAPI.closeWindow();
+    resetState();
     return;
   }
 
