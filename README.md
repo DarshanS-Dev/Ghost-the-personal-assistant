@@ -1,49 +1,61 @@
-# ghost (V1)
+# Ghost
 
-Hotkey -> tiny text box -> Gemini decides -> task lands in TickTick.
-Nothing runs in the background. Popup closes itself after replying.
+Minimal AI personal assistant command palette.
+
+Hotkey -> Modern Spotlight Command Palette -> Gemini decides -> Task lands in TickTick (or other tools).
+
+---
+
+## Architecture
+
+- **`ui/`**: Electron frontend matching the command palette design (HTML/CSS/JS).
+- **`backend/`**: 100% Python AI logic (`llm.py`, `tools.py`, `ticktick.py`).
+
+```
+Ghost/
+├── ui/                 # Frontend: Electron window, styles, HTML
+├── backend/            # Backend: Python tools & LLM logic
+│   ├── tools.py        # <--- Add all your custom tools here!
+│   ├── llm.py          # Gemini AI runner
+│   └── ticktick.py     # TickTick integration
+├── run.sh              # Hotkey launcher
+└── .env                # API keys and settings
+```
+
+---
 
 ## Setup (Ubuntu)
 
 ```bash
-sudo apt install python3-tk python3-venv libnotify-bin
-cd jarvis-lite
+cd Ghost
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
+npm install
 chmod +x run.sh
-cp .env.example .env     # then edit .env
+cp .env.example .env     # then edit .env with your keys
 ```
 
-### 1. Gemini key
-Get a free key at https://aistudio.google.com/apikey and put it in `.env` as `GEMINI_API_KEY`.
-If you get a "model not found" error, pick a current Flash model name in AI Studio and set `GEMINI_MODEL`.
+### 1. Launching Ghost
+- Run `./run.sh` or `npm start` to open the command palette.
+- Press `Enter` to create a task, or `Esc` to close.
 
-### 2. TickTick access (pick one)
-- **Personal token**: TickTick's developer docs mention a personal API token you can create
-  without OAuth. If you can find it on https://developer.ticktick.com , paste it as `TICKTICK_TOKEN`.
-- **OAuth**: register an app at https://developer.ticktick.com , set redirect URI to
-  `http://localhost:8765/callback`, put the id/secret in `.env`, then run `.venv/bin/python auth.py`.
+### 2. Hotkey Shortcut
+Go to **Settings -> Keyboard -> Keyboard Shortcuts -> Custom Shortcuts -> Add**:
+- **Name**: `Ghost`
+- **Command**: `/full/path/to/Ghost/run.sh`
+- **Shortcut**: `Super+Space` or `Super+G`
 
-### 3. Test without the GUI
-```bash
-.venv/bin/python main.py "remind me to call the vendor tomorrow 5pm, high priority"
+---
+
+## Adding More Tools (100% Python)
+To add a new tool (e.g. Gmail unread check, Google Calendar, web search), simply open `backend/tools.py`, write a Python function with type hints and a docstring, and add it to `TOOLS`:
+
+```python
+def check_unread_emails(limit: int = 5) -> dict:
+    """Check recent unread emails in Gmail inbox."""
+    # your python logic here
+    return {"status": "ok", "emails": [...]}
+
+TOOLS = [add_task, check_unread_emails]
 ```
-Check TickTick. If it shows up with the right time, the hard part is done.
-
-### 4. Hotkey
-Settings -> Keyboard -> Keyboard Shortcuts -> Custom Shortcuts -> Add:
-- Name: Jarvis-lite
-- Command: `/full/path/to/jarvis-lite/run.sh`
-- Shortcut: e.g. `Super+J`
-
-## Adding more tools later
-Write a function in `tools.py` (type hints + docstring with Args), add it to `TOOLS`.
-That is all. Calendar, Gmail, web search all plug in the same way.
-
-## Known unverified bits
-I couldn't load TickTick's full docs page while writing this, so these come from
-secondary sources and should be checked on your first run:
-- priority values (0/1/3/5), the `repeatFlag` RRULE format, and the `reminders`
-  trigger strings (`TRIGGER:PT0S`)
-- whether OAuth tokens expire and need refresh (if you get 401 later, re-run `auth.py`)
-If a task is created but the reminder or repeat is missing, those fields are the first suspects.
+Gemini automatically learns how and when to call your tool.

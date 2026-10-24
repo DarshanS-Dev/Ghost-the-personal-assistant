@@ -1,10 +1,10 @@
 {
   "name": "ghost",
   "version": "1.0.0",
-  "description": "Hotkey -> tiny text box -> Gemini decides -> task lands in TickTick. Nothing runs in the background. Popup closes itself after replying.",
-  "main": "index.js",
+  "description": "Minimal AI personal assistant command palette.",
+  "main": "ui/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron ."
   },
   "repository": {
     "type": "git",
@@ -13,10 +13,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/paul-raja-dev/Ghost-the-personal-assistant/issues"
-  },
-  "homepage": "https://github.com/paul-raja-dev/Ghost-the-personal-assistant#readme",
   "devDependencies": {
     "electron": "^45.0.0"
   }
