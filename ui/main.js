@@ -18,13 +18,20 @@ function loadWindowState() {
   return null;
 }
 
+let saveTimer = null;
 function saveWindowState() {
-  if (!mainWindow) return;
-  try {
-    const [x, y] = mainWindow.getPosition();
-    fs.mkdirSync(path.dirname(stateFile), { recursive: true });
-    fs.writeFileSync(stateFile, JSON.stringify({ x, y }));
-  } catch (e) {}
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    try {
+      const [x, y] = mainWindow.getPosition();
+      // Only save valid coordinates; never overwrite with top-left (0,0) reset
+      if (x > 20 || y > 20) {
+        fs.mkdirSync(path.dirname(stateFile), { recursive: true });
+        fs.writeFileSync(stateFile, JSON.stringify({ x, y }));
+      }
+    } catch (e) {}
+  }, 250);
 }
 
 function createWindow() {
@@ -33,12 +40,15 @@ function createWindow() {
   const width = 580;
   const height = 112;
 
-  const saved = loadWindowState();
-  let x = saved && typeof saved.x === 'number' ? saved.x : Math.round((screenWidth - width) / 2);
-  let y = saved && typeof saved.y === 'number' ? saved.y : Math.round(screenHeight / 4);
+  const defaultX = Math.round((screenWidth - width) / 2);
+  const defaultY = Math.round(screenHeight / 4);
 
-  if (x < 0 || x > screenWidth - 100) x = Math.round((screenWidth - width) / 2);
-  if (y < 0 || y > screenHeight - 60) y = Math.round(screenHeight / 4);
+  const saved = loadWindowState();
+  let x = (saved && typeof saved.x === 'number' && saved.x > 20) ? saved.x : defaultX;
+  let y = (saved && typeof saved.y === 'number' && saved.y > 20) ? saved.y : defaultY;
+
+  if (x < 0 || x > screenWidth - 100) x = defaultX;
+  if (y < 0 || y > screenHeight - 60) y = defaultY;
 
   mainWindow = new BrowserWindow({
     width: width,
@@ -67,8 +77,8 @@ function createWindow() {
     mainWindow.focus();
   });
 
+  // Save coordinates when dragged/moved
   mainWindow.on('moved', saveWindowState);
-  mainWindow.on('close', saveWindowState);
 }
 
 // Single instance handling
@@ -123,7 +133,6 @@ if (!gotTheLock) {
   });
 
   ipcMain.handle('ghost:close-window', () => {
-    saveWindowState();
     app.quit();
   });
 
